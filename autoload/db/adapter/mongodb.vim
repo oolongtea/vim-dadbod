@@ -16,7 +16,15 @@ function! db#adapter#mongodb#output_extension() abort
 endfunction
 
 function! db#adapter#mongodb#interactive(url) abort
-  return 'mongo' . db#url#as_args(a:url, '--host ', '--port ', '', '-u ', '-p ', '')
+  let url = db#url#parse(a:url)
+  let cmd = 'mongo' . db#url#as_args(a:url, '--host ', '--port ', '', '-u ', '-p ', ' --authenticationDatabase ')
+
+  if get(url.params, 'ssl') ==# 'true'
+    let cmd .= ' --ssl '
+  endif
+
+  let cmd .= substitute(url.path, '^/', '', '') . ' '
+  return cmd
 endfunction
 
 function! db#adapter#mongodb#filter(url) abort
